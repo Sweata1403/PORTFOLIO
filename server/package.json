@@ -1,0 +1,40 @@
+{
+  "name": "sweata-portfolio-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Express + SQLite backend for the Sweata Chakraborty portfolio.",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "build": "node -e \"console.log('No separate server build step required.')\"",
+    "db:init": "node src/cli.js init-db",
+    "owner:create": "node src/cli.js create-owner",
+    "backup": "node src/cli.js backup"
+  },
+  "keywords": [
+    "express",
+    "sqlite",
+    "security"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^12.4.1",
+    "compression": "^1.8.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.1.0",
+    "helmet": "^8.1.0",
+    "mime-types": "^3.0.1",
+    "multer": "^2.0.2",
+    "nanoid": "^5.1.6",
+    "sanitize-html": "^2.17.0",
+    "sweata-portfolio": "file:..",
+    "zod": "^4.1.11"
+  }
+}

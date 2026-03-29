@@ -1,0 +1,28 @@
+{
+  "name": "sweata-portfolio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Minimal portfolio website for Sweata Chakraborty built with React, Express, and SQLite.",
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "build": "npm run build --prefix client && npm run build --prefix server",
+    "start": "npm run start --prefix server",
+    "lint": "npm run lint --prefix client",
+    "db:init": "npm run db:init --prefix server",
+    "owner:create": "npm run owner:create --prefix server",
+    "backup": "npm run backup --prefix server"
+  },
+  "keywords": [
+    "react",
+    "express",
+    "sqlite",
+    "portfolio",
+    "resume",
+    "data-engineering"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
