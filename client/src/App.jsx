@@ -2144,6 +2144,7 @@ function RoutedApp({
   logout
 }) {
   const location = useLocation();
+  useScrollReveal();
 
   useEffect(() => {
     refreshSession();
@@ -2225,7 +2226,178 @@ function RoutedApp({
   );
 }
 
+function useScrollReveal() {
+  useEffect(() => {
+    const SELECTORS = [
+      '.page-stack .section-title',
+      '.page-stack .stat-card',
+      '.page-stack .detail-card',
+      '.page-stack .timeline-card',
+      '.page-stack .surface-card',
+      '.reveal',
+    ].join(',');
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0, rootMargin: '0px 0px 0px 0px' }
+    );
+
+    const attach = () => {
+      const viewH = window.innerHeight;
+      document.querySelectorAll(SELECTORS).forEach((el) => {
+        if (el.classList.contains('visible') || el.classList.contains('will-reveal')) return;
+        const rect = el.getBoundingClientRect();
+        // Only animate elements that start below the visible area
+        if (rect.top > viewH * 0.92) {
+          // find sibling index for stagger
+          const siblings = el.parentElement
+            ? Array.from(el.parentElement.children).filter((c) => c.matches(SELECTORS))
+            : [];
+          const idx = siblings.indexOf(el);
+          if (idx > 0) el.setAttribute('data-delay', Math.min(idx, 4));
+          el.classList.add('will-reveal');
+        } else {
+          // Already in view — make sure it's fully visible
+          el.classList.remove('will-reveal');
+        }
+        observer.observe(el);
+      });
+    };
+
+    const raf = requestAnimationFrame(() => {
+      attach();
+      const mo = new MutationObserver(() => requestAnimationFrame(attach));
+      mo.observe(document.body, { childList: true, subtree: true });
+      observer._mo = mo;
+    });
+
+    return () => {
+      cancelAnimationFrame(raf);
+      observer.disconnect();
+      if (observer._mo) observer._mo.disconnect();
+    };
+  }, []);
+}
+
+function CustomCursor() {
+  useEffect(() => {
+    const dot  = document.getElementById('cur-dot');
+    const ring = document.getElementById('cur-ring');
+    if (!dot || !ring) return;
+
+    let mx = 0, my = 0, rx = 0, ry = 0, raf;
+    let visible = false;
+
+    const show = () => {
+      if (!visible) { dot.style.opacity = '1'; ring.style.opacity = '1'; visible = true; }
+    };
+
+    const onMove = (e) => {
+      mx = e.clientX; my = e.clientY;
+      dot.style.transform = `translate(${mx}px,${my}px)`;
+      show();
+    };
+
+    const onEnter = (e) => {
+      const t = e.currentTarget;
+      ring.classList.add('cur-hover');
+      if (t.tagName === 'A' || t.tagName === 'BUTTON') ring.classList.add('cur-link');
+    };
+    const onLeave = () => ring.classList.remove('cur-hover', 'cur-link');
+
+    const loop = () => {
+      rx += (mx - rx) * 0.11;
+      ry += (my - ry) * 0.11;
+      ring.style.transform = `translate(${rx}px,${ry}px)`;
+      raf = requestAnimationFrame(loop);
+    };
+
+    const attachHover = () => {
+      document.querySelectorAll('a,button,[role="button"]').forEach((el) => {
+        el.addEventListener('mouseenter', onEnter);
+        el.addEventListener('mouseleave', onLeave);
+      });
+    };
+
+    document.addEventListener('mousemove', onMove);
+    attachHover();
+    const mo = new MutationObserver(attachHover);
+    mo.observe(document.body, { childList: true, subtree: true });
+    raf = requestAnimationFrame(loop);
+
+    return () => {
+      document.removeEventListener('mousemove', onMove);
+      cancelAnimationFrame(raf);
+      mo.disconnect();
+    };
+  }, []);
+
+  return (
+    <>
+      <div id="cur-dot"  className="cur-dot"  />
+      <div id="cur-ring" className="cur-ring" />
+    </>
+  );
+}
+
+function IntroLoader({ onDone }) {
+  const words = ['Senior Software Engineer', 'DevOps Engineer', 'Data Engineer', 'Cloud Architect'];
+  const [wordIdx, setWordIdx] = useState(0);
+  const [phase, setPhase] = useState('in'); // 'in' | 'hold' | 'out'
+  const [exit, setExit] = useState(false);
+
+  useEffect(() => {
+    // Show on every page load/refresh
+
+    // Timing per word: 400ms fade-in + 1000ms hold + 300ms fade-out = ~1700ms
+    // 4 words × 1700ms ≈ 6.8s total (+ 700ms exit fade) ≈ 5-6s visible feel
+    let t;
+    if (phase === 'in') {
+      t = setTimeout(() => setPhase('hold'), 400);
+    } else if (phase === 'hold') {
+      t = setTimeout(() => setPhase('out'), 1000);
+    } else if (phase === 'out') {
+      if (wordIdx < words.length - 1) {
+        t = setTimeout(() => {
+          setWordIdx((i) => i + 1);
+          setPhase('in');
+        }, 300);
+      } else {
+        // All words done — fade out entire screen
+        t = setTimeout(() => {
+          setExit(true);
+          setTimeout(() => {
+
+            onDone();
+          }, 700);
+        }, 400);
+      }
+    }
+    return () => clearTimeout(t);
+  }, [phase, wordIdx]);
+
+  return (
+    <div className={`intro-overlay${exit ? ' intro-exit' : ''}`}>
+      <div className="intro-content">
+        <div className="intro-name">Sweata Chakraborty</div>
+        <div className="intro-divider" />
+        <div className={`intro-word intro-${phase}`}>{words[wordIdx]}</div>
+        <div className="intro-cursor" />
+      </div>
+      <div className="intro-grid" />
+    </div>
+  );
+}
+
 export default function App() {
+  const [introComplete, setIntroComplete] = useState(false);
   const [theme, setTheme] = useState(() => localStorage.getItem('sweata-portfolio-theme') || 'light');
   const [session, setSession] = useState({
     loading: true,
@@ -2307,7 +2479,10 @@ export default function App() {
   }, []);
 
   return (
-    <BrowserRouter>
+    <>
+      <CustomCursor />
+      {!introComplete && <IntroLoader onDone={() => setIntroComplete(true)} />}
+      <BrowserRouter>
       <RoutedApp
         theme={theme}
         setTheme={setTheme}
@@ -2321,5 +2496,6 @@ export default function App() {
         logout={logout}
       />
     </BrowserRouter>
+    </>
   );
 }
