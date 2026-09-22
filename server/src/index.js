@@ -128,6 +128,11 @@ function sanitizePlain(value, maxLength = 1000) {
     allowedTags: [],
     allowedAttributes: {}
   })
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#x27;/g, "'")
     .replace(/\r\n/g, '\n')
     .trim()
     .slice(0, maxLength);
