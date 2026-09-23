@@ -2333,20 +2333,20 @@ function IntroLoader({ onDone }) {
     let exitTimer;
 
     if (phase === 'in') {
-      timer = setTimeout(() => setPhase('hold'), 400);
+      timer = setTimeout(() => setPhase('hold'), 200);
     } else if (phase === 'hold') {
-      timer = setTimeout(() => setPhase('out'), 1000);
+      timer = setTimeout(() => setPhase('out'), 450);
     } else if (phase === 'out') {
       if (wordIdx < INTRO_WORDS.length - 1) {
         timer = setTimeout(() => {
           setWordIdx((index) => index + 1);
           setPhase('in');
-        }, 300);
+        }, 150);
       } else {
         timer = setTimeout(() => {
           setExit(true);
-          exitTimer = setTimeout(() => onDone(), 700);
-        }, 400);
+          exitTimer = setTimeout(() => onDone(), 400);
+        }, 200);
       }
     }
 
