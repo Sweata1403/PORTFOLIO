@@ -62,7 +62,7 @@ function splitParagraphs(value) {
 
 function splitList(value) {
   return String(value || '')
-    .split(/[\n,]/)
+    .split(/\n/)
     .map((item) => item.trim())
     .filter(Boolean);
 }
