@@ -279,6 +279,13 @@ ul { margin: 0; padding-left: 1.1rem; }
   border-radius: calc(var(--radius-xl) - 4px);
   object-fit: cover;
   background: linear-gradient(135deg, rgba(91, 61, 232, 0.15), rgba(169, 138, 255, 0.35));
+  transition: transform 300ms ease, box-shadow 300ms ease, filter 300ms ease;
+}
+
+.profile-photo:hover, .profile-placeholder:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 40px rgba(91, 61, 232, 0.35), 0 0 0 1px rgba(169, 138, 255, 0.3);
+  filter: brightness(1.05);
 }
 
 .profile-placeholder {
